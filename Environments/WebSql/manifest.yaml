@@ -1,5 +1,5 @@
 name: WebSql
-version: 1.0.0
+version: 1.0.1
 summary: Azure Web App and SQL Database Environment
 description: Deploys a web app, sql db, application insights
 runner: ARM

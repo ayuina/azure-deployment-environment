@@ -1,13 +1,13 @@
 param prefix string = 'ayuina'
 param region string = 'westus3'
 param adminName string = prefix
-@secure()
-param adminSqlPassword string
 
 var appSvcName = '${prefix}-web'
 var appSvcPlanName = '${prefix}-asp'
 var sqlSvrName = '${prefix}-sqlsvr'
 var sqlDbName = '${prefix}-sqldb'
+var adminSqlPassword = 'P@ss${uniqueString(resourceGroup().id, adminName)}'
+
 var logAnalyticsName = '${prefix}-laws'
 var appInsightsName = '${appSvcName}-ai'
 
