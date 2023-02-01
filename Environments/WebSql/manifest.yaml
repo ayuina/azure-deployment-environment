@@ -1,4 +1,4 @@
-name: WebApp
+name: WebSql
 version: 1.0.0
 summary: Azure Web App and SQL Database Environment
 description: Deploys a web app, sql db, application insights
