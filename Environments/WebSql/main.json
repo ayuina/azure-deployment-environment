@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.13.1.58284",
-      "templateHash": "11298096199187517399"
+      "version": "0.14.6.61914",
+      "templateHash": "17539056952144150839"
     }
   },
   "parameters": {
@@ -20,9 +20,6 @@
     "adminName": {
       "type": "string",
       "defaultValue": "[parameters('prefix')]"
-    },
-    "adminSqlPassword": {
-      "type": "secureString"
     }
   },
   "variables": {
@@ -30,6 +27,7 @@
     "appSvcPlanName": "[format('{0}-asp', parameters('prefix'))]",
     "sqlSvrName": "[format('{0}-sqlsvr', parameters('prefix'))]",
     "sqlDbName": "[format('{0}-sqldb', parameters('prefix'))]",
+    "adminSqlPassword": "[format('P@ss{0}', uniqueString(resourceGroup().id, parameters('adminName')))]",
     "logAnalyticsName": "[format('{0}-laws', parameters('prefix'))]",
     "appInsightsName": "[format('{0}-ai', variables('appSvcName'))]"
   },
@@ -135,7 +133,7 @@
       "location": "[parameters('region')]",
       "properties": {
         "administratorLogin": "[parameters('adminName')]",
-        "administratorLoginPassword": "[parameters('adminSqlPassword')]"
+        "administratorLoginPassword": "[variables('adminSqlPassword')]"
       }
     },
     {
@@ -157,7 +155,7 @@
       "properties": {
         "sqlconstr": {
           "type": "SQLAzure",
-          "value": "[format('Server=tcp:{0},1433; Database={1}; User ID={2}; Password={3};Trusted_Connection=False;Encrypt=True;', reference(resourceId('Microsoft.Sql/servers', variables('sqlSvrName')), '2021-11-01').fullyQualifiedDomainName, variables('sqlDbName'), parameters('adminName'), parameters('adminSqlPassword'))]"
+          "value": "[format('Server=tcp:{0},1433; Database={1}; User ID={2}; Password={3};Trusted_Connection=False;Encrypt=True;', reference(resourceId('Microsoft.Sql/servers', variables('sqlSvrName')), '2021-11-01').fullyQualifiedDomainName, variables('sqlDbName'), parameters('adminName'), variables('adminSqlPassword'))]"
         }
       },
       "dependsOn": [
