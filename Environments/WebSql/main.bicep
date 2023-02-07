@@ -1,12 +1,13 @@
 param prefix string = 'ayuina'
 param region string = 'westus3'
-param adminName string = prefix
+param sqlusername string = prefix
+@secure()
+param sqlpassword string
 
 var appSvcName = '${prefix}-web'
 var appSvcPlanName = '${prefix}-asp'
 var sqlSvrName = '${prefix}-sqlsvr'
 var sqlDbName = '${prefix}-sqldb'
-var adminSqlPassword = 'P@ss${uniqueString(resourceGroup().id, adminName)}'
 
 var logAnalyticsName = '${prefix}-laws'
 var appInsightsName = '${appSvcName}-ai'
@@ -92,8 +93,8 @@ resource sqlsvr 'Microsoft.Sql/servers@2021-11-01' = {
   name: sqlSvrName
   location: region
   properties: {
-    administratorLogin: adminName
-    administratorLoginPassword: adminSqlPassword
+    administratorLogin: sqlusername
+    administratorLoginPassword: sqlpassword
   }
 }
 
@@ -112,7 +113,7 @@ resource sqlconstr 'Microsoft.Web/sites/config@2022-03-01' = {
   properties: {
     sqlconstr : {
       type: 'SQLAzure'
-      value: 'Server=tcp:${sqlsvr.properties.fullyQualifiedDomainName},1433; Database=${sqlDbName}; User ID=${adminName}; Password=${adminSqlPassword};Trusted_Connection=False;Encrypt=True;'
+      value: 'Server=tcp:${sqlsvr.properties.fullyQualifiedDomainName},1433; Database=${sqlDbName}; User ID=${sqlusername}; Password=${sqlpassword};Trusted_Connection=False;Encrypt=True;'
     }
   }
 }
