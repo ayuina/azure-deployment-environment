@@ -17,9 +17,14 @@ parameters:
   default: "[resourceGroup().location]"
   type: "string"
   required: true
-- id: "adminName"
-  name: "adminName"
-  description: "User name of sql database"
+- id: "sqlusername"
+  name: "sqlusername"
+  description: "User name of SQL Database"
   default: "demo"
   type: "string"
+  required: true
+- id: "sqlpassword"
+  name: "sqlpassword"
+  description: "Password of sqluser"
+  type: "securestring"
   required: true
