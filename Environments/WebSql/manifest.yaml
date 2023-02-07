@@ -26,5 +26,5 @@ parameters:
 - id: "sqlpassword"
   name: "sqlpassword"
   description: "Password of sqluser"
-  type: "securestring"
+  type: "string"
   required: true
