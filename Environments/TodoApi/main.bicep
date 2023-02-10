@@ -1,5 +1,5 @@
-param prefix string = 'ayuina'
-param region string = 'westus3'
+param prefix string
+param region string
 
 var lawsName = '${prefix}-laws'
 var appInsName = '${prefix}-ai'

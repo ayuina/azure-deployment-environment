@@ -5,17 +5,15 @@
     "_generator": {
       "name": "bicep",
       "version": "0.14.6.61914",
-      "templateHash": "14496422385764749414"
+      "templateHash": "9285574382438691978"
     }
   },
   "parameters": {
     "prefix": {
-      "type": "string",
-      "defaultValue": "ayuina"
+      "type": "string"
     },
     "region": {
-      "type": "string",
-      "defaultValue": "westus3"
+      "type": "string"
     }
   },
   "variables": {
