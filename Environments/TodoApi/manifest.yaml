@@ -1,19 +1,6 @@
 name: TodoApi
-version: 0.1.2
+version: 1.0.0
 summary: Todo API sample 
 description: Deploys API Manament, Backend API (Web Apps and SQL Database) and Diagnostics
 runner: ARM
 templatePath: main.json
-parameters:
-- id: "prefix"
-  name: "prefix"
-  description: "prefix name for unique id"
-  default: "demo"
-  type: "string"
-  required: true
-- id: "region"
-  name: "region"
-  description: "Azure region for deployed resources"
-  default: "westus3"
-  type: "string"
-  required: true
