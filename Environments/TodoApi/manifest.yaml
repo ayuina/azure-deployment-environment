@@ -1,5 +1,5 @@
 name: TodoApi
-version: 0.1.1
+version: 0.1.2
 summary: Todo API sample 
 description: Deploys API Manament, Backend API (Web Apps and SQL Database) and Diagnostics
 runner: ARM

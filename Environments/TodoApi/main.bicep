@@ -3,7 +3,6 @@ param region string = 'westus3'
 
 var lawsName = '${prefix}-laws'
 var appInsName = '${prefix}-ai'
-param deploymentId string = '${dateTimeToEpoch(utcNow())}'
 
 resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
   name: lawsName
@@ -37,7 +36,7 @@ resource appinsights 'Microsoft.Insights/components@2020-02-02' = {
 }
 
 module apim './apim.bicep' = {
-  name: 'apim-${deploymentId}'
+  name: 'apim'
   params:{
     prefix: prefix
     region: region
@@ -47,7 +46,7 @@ module apim './apim.bicep' = {
 }
 
 module webapi 'webdb.bicep' = {
-  name: 'webdb-${deploymentId}'
+  name: 'webdb'
   params:{
     prefix: prefix
     region: region
