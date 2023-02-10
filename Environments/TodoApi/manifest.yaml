@@ -1,5 +1,5 @@
 name: TodoApi
-version: 1.1.1
+version: 1.1.2
 summary: Todo API sample 
 description: Deploys API Manament, Backend API (Web Apps and SQL Database) and Diagnostics
 runner: ARM
@@ -8,16 +8,14 @@ parameters:
 - id: "prefix"
   name: "prefix"
   description: "prefix name for unique id"
+  default: "yourPrefix"
   type: "string"
   required: true
 - id: "region"
   name: "region"
   description: "Azure region for deployed resources"
+  default: "azureRegion"
   type: "string"
   required: true
-- id: "runfromPackageUrl"
-  name: "runfromPackageUrl"
-  description: "URL of RunFromPackage for Azure Web Apps"
-  type: "string"
-  required: true
+
 
