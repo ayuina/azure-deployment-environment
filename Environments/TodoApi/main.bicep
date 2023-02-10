@@ -1,5 +1,6 @@
 param prefix string
 param region string
+param runfromPackageUrl string
 
 var lawsName = '${prefix}-laws'
 var appInsName = '${prefix}-ai'
@@ -52,5 +53,6 @@ module webapi 'webdb.bicep' = {
     region: region
     appInsightName: appinsights.name
     logAnalyticsName: logAnalytics.name
+    runfromPackageUrl: runfromPackageUrl
   }
 }
