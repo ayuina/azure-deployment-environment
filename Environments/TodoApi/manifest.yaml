@@ -8,7 +8,7 @@ parameters:
 - id: "prefix"
   name: "prefix"
   description: "prefix name for unique id"
-  default: "demo"
+  default: "ayuina"
   type: "string"
   required: true
 - id: "region"
