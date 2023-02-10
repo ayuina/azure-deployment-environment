@@ -1,0 +1,367 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.14.6.61914",
+      "templateHash": "10521945982076679637"
+    }
+  },
+  "parameters": {
+    "prefix": {
+      "type": "string",
+      "defaultValue": "ayuina"
+    },
+    "region": {
+      "type": "string",
+      "defaultValue": "westus3"
+    },
+    "deploymentId": {
+      "type": "string",
+      "defaultValue": "[format('{0}', dateTimeToEpoch(utcNow()))]"
+    }
+  },
+  "variables": {
+    "lawsName": "[format('{0}-laws', parameters('prefix'))]",
+    "appInsName": "[format('{0}-ai', parameters('prefix'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "apiVersion": "2022-10-01",
+      "name": "[variables('lawsName')]",
+      "location": "[parameters('region')]",
+      "properties": {
+        "sku": {
+          "name": "PerGB2018"
+        },
+        "retentionInDays": 30,
+        "features": {
+          "enableLogAccessUsingOnlyResourcePermissions": true
+        },
+        "workspaceCapping": {
+          "dailyQuotaGb": -1
+        },
+        "publicNetworkAccessForIngestion": "Enabled",
+        "publicNetworkAccessForQuery": "Enabled"
+      }
+    },
+    {
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2020-02-02",
+      "name": "[variables('appInsName')]",
+      "location": "[parameters('region')]",
+      "kind": "web",
+      "properties": {
+        "Application_Type": "web",
+        "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('lawsName'))]",
+        "publicNetworkAccessForIngestion": "Enabled",
+        "publicNetworkAccessForQuery": "Enabled"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.OperationalInsights/workspaces', variables('lawsName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "[format('apim-{0}', parameters('deploymentId'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "prefix": {
+            "value": "[parameters('prefix')]"
+          },
+          "region": {
+            "value": "[parameters('region')]"
+          },
+          "appInsightName": {
+            "value": "[variables('appInsName')]"
+          },
+          "logAnalyticsName": {
+            "value": "[variables('lawsName')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.14.6.61914",
+              "templateHash": "261428773897830820"
+            }
+          },
+          "parameters": {
+            "prefix": {
+              "type": "string"
+            },
+            "region": {
+              "type": "string"
+            },
+            "appInsightName": {
+              "type": "string"
+            },
+            "logAnalyticsName": {
+              "type": "string"
+            }
+          },
+          "variables": {
+            "apimName": "[format('{0}-apim', parameters('prefix'))]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.ApiManagement/service",
+              "apiVersion": "2021-08-01",
+              "name": "[variables('apimName')]",
+              "location": "[parameters('region')]",
+              "sku": {
+                "name": "Developer",
+                "capacity": 1
+              },
+              "properties": {
+                "publisherName": "[parameters('prefix')]",
+                "publisherEmail": "[format('{0}@{1}.local', parameters('prefix'), parameters('prefix'))]",
+                "virtualNetworkType": "None"
+              }
+            },
+            {
+              "type": "Microsoft.ApiManagement/service/loggers",
+              "apiVersion": "2022-04-01-preview",
+              "name": "[format('{0}/{1}', variables('apimName'), format('{0}-logger', parameters('appInsightName')))]",
+              "properties": {
+                "loggerType": "applicationInsights",
+                "resourceId": "[resourceId('Microsoft.Insights/components', parameters('appInsightName'))]",
+                "credentials": {
+                  "instrumentationKey": "[reference(resourceId('Microsoft.Insights/components', parameters('appInsightName')), '2020-02-02').InstrumentationKey]"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service', variables('apimName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.ApiManagement/service/diagnostics",
+              "apiVersion": "2022-04-01-preview",
+              "name": "[format('{0}/{1}', variables('apimName'), 'applicationinsights')]",
+              "properties": {
+                "loggerId": "[resourceId('Microsoft.ApiManagement/service/loggers', variables('apimName'), format('{0}-logger', parameters('appInsightName')))]",
+                "alwaysLog": "allErrors",
+                "logClientIp": true,
+                "verbosity": "verbose"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service/loggers', variables('apimName'), format('{0}-logger', parameters('appInsightName')))]",
+                "[resourceId('Microsoft.ApiManagement/service', variables('apimName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Insights/diagnosticSettings",
+              "apiVersion": "2021-05-01-preview",
+              "scope": "[format('Microsoft.ApiManagement/service/{0}', variables('apimName'))]",
+              "name": "[format('{0}-diag', variables('apimName'))]",
+              "properties": {
+                "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('logAnalyticsName'))]",
+                "logAnalyticsDestinationType": "Dedicated",
+                "logs": [
+                  {
+                    "category": "GatewayLogs",
+                    "enabled": true
+                  },
+                  {
+                    "category": "WebSocketConnectionLogs",
+                    "enabled": true
+                  }
+                ],
+                "metrics": [
+                  {
+                    "category": "AllMetrics",
+                    "enabled": true
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.ApiManagement/service', variables('apimName'))]"
+              ]
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Insights/components', variables('appInsName'))]",
+        "[resourceId('Microsoft.OperationalInsights/workspaces', variables('lawsName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "[format('webdb-{0}', parameters('deploymentId'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "prefix": {
+            "value": "[parameters('prefix')]"
+          },
+          "region": {
+            "value": "[parameters('region')]"
+          },
+          "appInsightName": {
+            "value": "[variables('appInsName')]"
+          },
+          "logAnalyticsName": {
+            "value": "[variables('lawsName')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.14.6.61914",
+              "templateHash": "10161066590751655281"
+            }
+          },
+          "parameters": {
+            "prefix": {
+              "type": "string"
+            },
+            "region": {
+              "type": "string"
+            },
+            "logAnalyticsName": {
+              "type": "string"
+            },
+            "appInsightName": {
+              "type": "string"
+            }
+          },
+          "variables": {
+            "appSvcName": "[format('{0}-web', parameters('prefix'))]",
+            "appSvcPlanName": "[format('{0}-asp', parameters('prefix'))]",
+            "sqlSvrName": "[format('{0}-sqlsvr', parameters('prefix'))]",
+            "sqlDbName": "[format('{0}-sqldb', parameters('prefix'))]",
+            "adminName": "[parameters('prefix')]",
+            "adminSqlPassword": "[format('P@ss{0}', uniqueString(resourceGroup().id))]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Web/serverfarms",
+              "apiVersion": "2022-03-01",
+              "name": "[variables('appSvcPlanName')]",
+              "location": "[parameters('region')]",
+              "sku": {
+                "name": "S1",
+                "capacity": 1
+              }
+            },
+            {
+              "type": "Microsoft.Web/sites",
+              "apiVersion": "2022-03-01",
+              "name": "[variables('appSvcName')]",
+              "location": "[parameters('region')]",
+              "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('appSvcPlanName'))]",
+                "clientAffinityEnabled": false,
+                "siteConfig": {
+                  "netFrameworkVersion": "v7.0",
+                  "ftpsState": "Disabled",
+                  "use32BitWorkerProcess": false
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('appSvcPlanName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Web/sites/config",
+              "apiVersion": "2022-03-01",
+              "name": "[format('{0}/{1}', variables('appSvcName'), 'metadata')]",
+              "properties": {
+                "CURRENT_STACK": "dotnet"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', variables('appSvcName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Web/sites/config",
+              "apiVersion": "2022-03-01",
+              "name": "[format('{0}/{1}', variables('appSvcName'), 'appsettings')]",
+              "properties": {
+                "APPINSIGHTS_INSTRUMENTATIONKEY": "[reference(resourceId('Microsoft.Insights/components', parameters('appInsightName')), '2020-02-02').InstrumentationKey]",
+                "APPLICATIONINSIGHTS_CONNECTION_STRING": "[reference(resourceId('Microsoft.Insights/components', parameters('appInsightName')), '2020-02-02').ConnectionString]",
+                "ApplicationInsightsAgent_EXTENSION_VERSION": "~3",
+                "XDT_MicrosoftApplicationInsights_Mode": "Recommended",
+                "XDT_MicrosoftApplicationInsights_PreemptSdk": "1"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', variables('appSvcName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Sql/servers",
+              "apiVersion": "2021-11-01",
+              "name": "[variables('sqlSvrName')]",
+              "location": "[parameters('region')]",
+              "properties": {
+                "administratorLogin": "[variables('adminName')]",
+                "administratorLoginPassword": "[variables('adminSqlPassword')]"
+              }
+            },
+            {
+              "type": "Microsoft.Sql/servers/databases",
+              "apiVersion": "2021-11-01",
+              "name": "[format('{0}/{1}', variables('sqlSvrName'), variables('sqlDbName'))]",
+              "location": "[parameters('region')]",
+              "sku": {
+                "name": "GP_S_Gen5_1"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', variables('sqlSvrName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Web/sites/config",
+              "apiVersion": "2022-03-01",
+              "name": "[format('{0}/{1}', variables('appSvcName'), 'connectionstrings')]",
+              "properties": {
+                "sqlconstr": {
+                  "type": "SQLAzure",
+                  "value": "[format('Server=tcp:{0},1433; Database={1}; User ID={2}; Password={3};Trusted_Connection=False;Encrypt=True;', reference(resourceId('Microsoft.Sql/servers', variables('sqlSvrName')), '2021-11-01').fullyQualifiedDomainName, variables('sqlDbName'), variables('adminName'), variables('adminSqlPassword'))]"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', variables('sqlSvrName'))]",
+                "[resourceId('Microsoft.Web/sites', variables('appSvcName'))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Sql/servers/firewallRules",
+              "apiVersion": "2021-11-01",
+              "name": "[format('{0}/{1}', variables('sqlSvrName'), 'AllowAllWindowsAzureIps')]",
+              "properties": {
+                "startIpAddress": "0.0.0.0",
+                "endIpAddress": "0.0.0.0"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', variables('sqlSvrName'))]"
+              ]
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Insights/components', variables('appInsName'))]",
+        "[resourceId('Microsoft.OperationalInsights/workspaces', variables('lawsName'))]"
+      ]
+    }
+  ]
+}
