@@ -1,13 +1,14 @@
-param prefix string = 'ayuina0308a'
-param region string = 'japaneast'
-param infraRgName string = 'demo-proj'
+param prefix string
+param region string
+param infraRgName string
 param containerImage string
-param containerPort int
+param targetPort int
 
 var logAnalyticsName = '${prefix}-laws'
-var appInsightsName = '${prefix}-ai' 
-var uamiName = '${prefix}-uami' 
+var appInsightsName = '${prefix}-ai'
+var uamiName = '${prefix}-uami'
 var acrName = replace('${prefix}-acr', '-', '')
+
 var acaenvName = '${prefix}-env'
 var acaName = '${prefix}-aca'
 
@@ -38,13 +39,14 @@ resource acaenv 'Microsoft.App/managedEnvironments@2022-10-01' = {
     name: 'Consumption'
   }
   properties: {
-     appLogsConfiguration: {
+    daprAIConnectionString: appinsights.properties.ConnectionString
+    appLogsConfiguration: {
       destination: 'log-analytics'
       logAnalyticsConfiguration: {
         customerId: logAnalytics.properties.customerId
         sharedKey: logAnalytics.listKeys().primarySharedKey
       }
-     }
+    }
   }
 }
 
@@ -53,8 +55,8 @@ resource containerApp 'Microsoft.App/containerApps@2022-10-01' = {
   location: region
   identity: {
     type: 'UserAssigned'
-    userAssignedIdentities:{
-      '${uami.id}': { }
+    userAssignedIdentities: {
+      '${uami.id}': {}
     }
   }
   properties: {
@@ -69,26 +71,31 @@ resource containerApp 'Microsoft.App/containerApps@2022-10-01' = {
       ]
       ingress: {
         external: true
-        targetPort: containerPort
-        transport: 'http2'
+        targetPort: targetPort
+        transport: 'http'
       }
-      
+
     }
     template: {
       containers: [
         {
           name: '${acaName}-container'
-          image: '${acr.properties.loginServer}/${containerImage}'
+          image: containerImage
           env: [
             {
               name: 'ASPNETCORE_ENVIRONMENT'
               value: 'Development'
             }
           ]
+          resources:{
+            cpu: json('0.5')
+            memory: '1.0Gi'
+          }
         }
       ]
       scale: {
-        minReplicas: 10
+        minReplicas: 0
+        maxReplicas: 3
       }
     }
   }
