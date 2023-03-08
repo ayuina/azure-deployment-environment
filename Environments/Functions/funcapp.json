@@ -1,0 +1,254 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.15.31.15270",
+      "templateHash": "2276943848983120157"
+    }
+  },
+  "parameters": {
+    "prefix": {
+      "type": "string"
+    },
+    "region": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "logAnalyticsName": "[format('{0}-laws', parameters('prefix'))]",
+    "appInsightsName": "[format('{0}-ai', parameters('prefix'))]",
+    "funcStrName": "[format('{0}funcstr', parameters('prefix'))]",
+    "dataStrName": "[format('{0}datastr', parameters('prefix'))]",
+    "funcAppName": "[format('{0}-func', parameters('prefix'))]",
+    "funcPlanName": "[format('{0}-func-plan', parameters('prefix'))]",
+    "funcFilesName": "[format('{0}-files', variables('funcAppName'))]",
+    "queueTriggerQueueEnvName": "queue-trigger-queue",
+    "queueTriggerQueueName": "queue01",
+    "blobTriggerContainerEnvName": "blob-trigger-container",
+    "blobTriggerContainerName": "blobs01",
+    "loggingContainerEnvName": "function-logging-container",
+    "loggingContainerName": "logging",
+    "diagRetention": {
+      "days": 0,
+      "enabled": false
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+      "apiVersion": "2022-05-01",
+      "name": "[format('{0}/{1}/{2}', variables('funcStrName'), 'default', variables('funcFilesName'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('funcStrName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/queueServices/queues",
+      "apiVersion": "2022-09-01",
+      "name": "[format('{0}/{1}/{2}', variables('dataStrName'), 'default', variables('queueTriggerQueueName'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/queueServices', variables('dataStrName'), 'default')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+      "apiVersion": "2022-09-01",
+      "name": "[format('{0}/{1}/{2}', variables('dataStrName'), 'default', variables('blobTriggerContainerName'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/blobServices', variables('dataStrName'), 'default')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+      "apiVersion": "2022-09-01",
+      "name": "[format('{0}/{1}/{2}', variables('dataStrName'), 'default', variables('loggingContainerName'))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/blobServices', variables('dataStrName'), 'default')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/queueServices",
+      "apiVersion": "2022-09-01",
+      "name": "[format('{0}/{1}', variables('dataStrName'), 'default')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('dataStrName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices",
+      "apiVersion": "2022-09-01",
+      "name": "[format('{0}/{1}', variables('dataStrName'), 'default')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('dataStrName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2022-05-01",
+      "name": "[variables('funcStrName')]",
+      "location": "[parameters('region')]",
+      "kind": "StorageV2",
+      "sku": {
+        "name": "Standard_LRS"
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2022-09-01",
+      "name": "[variables('dataStrName')]",
+      "location": "[parameters('region')]",
+      "kind": "StorageV2",
+      "sku": {
+        "name": "Standard_LRS"
+      }
+    },
+    {
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "apiVersion": "2022-10-01",
+      "name": "[variables('logAnalyticsName')]",
+      "location": "[parameters('region')]",
+      "properties": {
+        "sku": {
+          "name": "PerGB2018"
+        },
+        "retentionInDays": 30,
+        "features": {
+          "enableLogAccessUsingOnlyResourcePermissions": true
+        },
+        "workspaceCapping": {
+          "dailyQuotaGb": -1
+        },
+        "publicNetworkAccessForIngestion": "Enabled",
+        "publicNetworkAccessForQuery": "Enabled"
+      }
+    },
+    {
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2020-02-02",
+      "name": "[variables('appInsightsName')]",
+      "location": "[parameters('region')]",
+      "kind": "web",
+      "properties": {
+        "Application_Type": "web",
+        "Request_Source": "IbizaWebAppExtensionCreate",
+        "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsName'))]",
+        "publicNetworkAccessForIngestion": "Enabled",
+        "publicNetworkAccessForQuery": "Enabled"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Web/serverfarms",
+      "apiVersion": "2022-03-01",
+      "name": "[variables('funcPlanName')]",
+      "location": "[parameters('region')]",
+      "kind": "elastic",
+      "sku": {
+        "name": "EP1",
+        "tier": "ElasticPremium",
+        "family": "EP"
+      },
+      "properties": {
+        "maximumElasticWorkerCount": 1
+      }
+    },
+    {
+      "type": "Microsoft.Web/sites",
+      "apiVersion": "2022-03-01",
+      "name": "[variables('funcAppName')]",
+      "location": "[parameters('region')]",
+      "kind": "functionapp",
+      "properties": {
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('funcPlanName'))]",
+        "clientAffinityEnabled": false,
+        "siteConfig": {
+          "appSettings": [
+            {
+              "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+              "value": "[reference(resourceId('Microsoft.Insights/components', variables('appInsightsName')), '2020-02-02').InstrumentationKey]"
+            },
+            {
+              "name": "AzureWebJobsStorage",
+              "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', variables('funcStrName'), environment().suffixes.storage, listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('funcStrName')), '2022-05-01').keys[0].value)]"
+            },
+            {
+              "name": "AzureWebJobsDashboard",
+              "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', variables('funcStrName'), environment().suffixes.storage, listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('funcStrName')), '2022-05-01').keys[0].value)]"
+            },
+            {
+              "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+              "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', variables('funcStrName'), environment().suffixes.storage, listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('funcStrName')), '2022-05-01').keys[0].value)]"
+            },
+            {
+              "name": "WEBSITE_CONTENTSHARE",
+              "value": "[variables('funcFilesName')]"
+            },
+            {
+              "name": "FUNCTIONS_EXTENSION_VERSION",
+              "value": "~4"
+            },
+            {
+              "name": "FUNCTIONS_WORKER_RUNTIME",
+              "value": "dotnet"
+            },
+            {
+              "name": "AzureWebJobsDataStorage",
+              "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', variables('dataStrName'), environment().suffixes.storage, listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('dataStrName')), '2022-09-01').keys[0].value)]"
+            },
+            {
+              "name": "[variables('queueTriggerQueueEnvName')]",
+              "value": "[variables('queueTriggerQueueName')]"
+            },
+            {
+              "name": "[variables('blobTriggerContainerEnvName')]",
+              "value": "[variables('blobTriggerContainerName')]"
+            },
+            {
+              "name": "[variables('loggingContainerEnvName')]",
+              "value": "[variables('loggingContainerName')]"
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Insights/components', variables('appInsightsName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('dataStrName'))]",
+        "[resourceId('Microsoft.Web/serverfarms', variables('funcPlanName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('funcStrName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Insights/diagnosticSettings",
+      "apiVersion": "2021-05-01-preview",
+      "scope": "[format('Microsoft.Web/sites/{0}', variables('funcAppName'))]",
+      "name": "[format('{0}-diag', variables('funcAppName'))]",
+      "properties": {
+        "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', variables('funcStrName'))]",
+        "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsName'))]",
+        "logs": [
+          {
+            "category": "FunctionAppLog",
+            "enabled": true,
+            "retentionPolicy": "[variables('diagRetention')]"
+          }
+        ],
+        "metrics": [
+          {
+            "timeGrain": null,
+            "enabled": true,
+            "retentionPolicy": "[variables('diagRetention')]"
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', variables('funcAppName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('funcStrName'))]",
+        "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsName'))]"
+      ]
+    }
+  ]
+}
