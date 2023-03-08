@@ -126,15 +126,11 @@ resource funcApp 'Microsoft.Web/sites@2022-03-01' = {
     siteConfig:{
       appSettings:[
         {
-          name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-          value: appinsights.properties.InstrumentationKey
+          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+          value: appinsights.properties.ConnectionString
         }
         {
           name: 'AzureWebJobsStorage'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${funcStrName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${funcStr.listKeys().keys[0].value}'
-        }
-        {
-          name: 'AzureWebJobsDashboard'
           value: 'DefaultEndpointsProtocol=https;AccountName=${funcStrName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${funcStr.listKeys().keys[0].value}'
         }
         {
@@ -168,7 +164,6 @@ resource funcApp 'Microsoft.Web/sites@2022-03-01' = {
         {
           name : loggingContainerEnvName
           value : loggingContainerName
-
         }
       ]
     }

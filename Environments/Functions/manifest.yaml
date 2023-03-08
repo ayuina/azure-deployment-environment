@@ -1,5 +1,5 @@
 name: Functions
-version: 1.0.0
+version: 1.0.1
 summary: Azure Functions with Storage environment
 description: Deploys functions, storage, application insights
 runner: ARM
