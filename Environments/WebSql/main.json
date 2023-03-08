@@ -4,25 +4,16 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.14.6.61914",
-      "templateHash": "72986784115065582"
+      "version": "0.15.31.15270",
+      "templateHash": "7949360897022851310"
     }
   },
   "parameters": {
     "prefix": {
-      "type": "string",
-      "defaultValue": "ayuina"
+      "type": "string"
     },
     "region": {
-      "type": "string",
-      "defaultValue": "westus3"
-    },
-    "sqlusername": {
-      "type": "string",
-      "defaultValue": "[parameters('prefix')]"
-    },
-    "sqlpassword": {
-      "type": "securestring"
+      "type": "string"
     }
   },
   "variables": {
@@ -30,6 +21,8 @@
     "appSvcPlanName": "[format('{0}-asp', parameters('prefix'))]",
     "sqlSvrName": "[format('{0}-sqlsvr', parameters('prefix'))]",
     "sqlDbName": "[format('{0}-sqldb', parameters('prefix'))]",
+    "sqlUserName": "[parameters('prefix')]",
+    "sqlUserPassword": "[format('P@ss{0}', uniqueString(resourceGroup().id))]",
     "logAnalyticsName": "[format('{0}-laws', parameters('prefix'))]",
     "appInsightsName": "[format('{0}-ai', variables('appSvcName'))]"
   },
@@ -134,8 +127,8 @@
       "name": "[variables('sqlSvrName')]",
       "location": "[parameters('region')]",
       "properties": {
-        "administratorLogin": "[parameters('sqlusername')]",
-        "administratorLoginPassword": "[parameters('sqlpassword')]"
+        "administratorLogin": "[variables('sqlUserName')]",
+        "administratorLoginPassword": "[variables('sqlUserPassword')]"
       }
     },
     {
@@ -157,7 +150,7 @@
       "properties": {
         "sqlconstr": {
           "type": "SQLAzure",
-          "value": "[format('Server=tcp:{0},1433; Database={1}; User ID={2}; Password={3};Trusted_Connection=False;Encrypt=True;', reference(resourceId('Microsoft.Sql/servers', variables('sqlSvrName')), '2021-11-01').fullyQualifiedDomainName, variables('sqlDbName'), parameters('sqlusername'), parameters('sqlpassword'))]"
+          "value": "[format('Server=tcp:{0},1433; Database={1}; User ID={2}; Password={3};Trusted_Connection=False;Encrypt=True;', reference(resourceId('Microsoft.Sql/servers', variables('sqlSvrName')), '2021-11-01').fullyQualifiedDomainName, variables('sqlDbName'), variables('sqlUserName'), variables('sqlUserPassword'))]"
         }
       },
       "dependsOn": [
@@ -181,7 +174,7 @@
   "outputs": {
     "webapiEndpoint": {
       "type": "string",
-      "value": "[format('https://{0}/swagger', reference(resourceId('Microsoft.Web/sites', variables('appSvcName')), '2022-03-01').enabledHostNames[0])]"
+      "value": "[format('https://{0}', reference(resourceId('Microsoft.Web/sites', variables('appSvcName')), '2022-03-01').enabledHostNames[0])]"
     },
     "kuduEndpoint": {
       "type": "string",

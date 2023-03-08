@@ -1,5 +1,5 @@
 name: WebSql
-version: 1.2.0
+version: 1.3.0
 summary: Azure Web App and SQL Database Environment
 description: Deploys a web app, sql db, application insights
 runner: ARM
@@ -15,16 +15,5 @@ parameters:
   name: "region"
   description: "Azure region for deployed resources"
   default: "[resourceGroup().location]"
-  type: "string"
-  required: true
-- id: "sqlusername"
-  name: "sqlusername"
-  description: "User name of SQL Database"
-  default: "demo"
-  type: "string"
-  required: true
-- id: "sqlpassword"
-  name: "sqlpassword"
-  description: "Password of sqluser"
   type: "string"
   required: true
