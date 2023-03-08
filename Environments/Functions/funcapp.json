@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.15.31.15270",
-      "templateHash": "2276943848983120157"
+      "templateHash": "9597660115898636206"
     }
   },
   "parameters": {
@@ -231,7 +231,7 @@
         "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsName'))]",
         "logs": [
           {
-            "category": "FunctionAppLog",
+            "category": "FunctionAppLogs",
             "enabled": true,
             "retentionPolicy": "[variables('diagRetention')]"
           }
