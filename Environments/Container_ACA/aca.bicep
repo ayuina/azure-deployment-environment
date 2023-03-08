@@ -4,21 +4,22 @@ param infraRgName string
 param containerImage string
 param targetPort int
 
+var strAccName = replace('${prefix}-str', '-', '')
 var logAnalyticsName = '${prefix}-laws'
-var appInsightsName = '${prefix}-ai'
 var uamiName = '${prefix}-uami'
 var acrName = replace('${prefix}-acr', '-', '')
 
 var acaenvName = '${prefix}-env'
 var acaName = '${prefix}-aca'
+var appInsightsName = '${acaName}-ai'
 
-resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
-  name: logAnalyticsName
+resource storage 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
+  name: strAccName
   scope: resourceGroup(infraRgName)
 }
 
-resource appinsights 'Microsoft.Insights/components@2020-02-02' existing = {
-  name: appInsightsName
+resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
+  name: logAnalyticsName
   scope: resourceGroup(infraRgName)
 }
 
@@ -30,6 +31,18 @@ resource acr 'Microsoft.ContainerRegistry/registries@2022-12-01' existing = {
 resource uami 'Microsoft.ManagedIdentity/userAssignedIdentities@2022-01-31-preview' existing = {
   name: uamiName
   scope: resourceGroup(infraRgName)
+}
+
+resource appinsights 'Microsoft.Insights/components@2020-02-02' = {
+  name: appInsightsName
+  location: region
+  kind: 'web'
+  properties: {
+    Application_Type: 'web'
+    WorkspaceResourceId: logAnalytics.id
+    publicNetworkAccessForIngestion: 'Enabled'
+    publicNetworkAccessForQuery: 'Enabled'
+  }
 }
 
 resource acaenv 'Microsoft.App/managedEnvironments@2022-10-01' = {
@@ -85,6 +98,10 @@ resource containerApp 'Microsoft.App/containerApps@2022-10-01' = {
             {
               name: 'ASPNETCORE_ENVIRONMENT'
               value: 'Development'
+            }
+            {
+              name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+              value: appinsights.properties.ConnectionString
             }
           ]
           resources:{

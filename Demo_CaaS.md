@@ -3,7 +3,7 @@
 ```bash
 # environment variables
 prefix=yourPrefix
-image=webapp1:0308b
+image=webapp1:v1
 targetPort=5000
 
 region=japaneast
@@ -51,7 +51,7 @@ docker push ${prefix}acr.azurecr.io/${image}
 cd ${CODESPACE_VSCODE_FOLDER}/Environments/Container_ACA
 
 az group create -g $acarg -l $region
-az deployment group create -g $acarg -f /aca.bicep \
+az deployment group create -g $acarg -f ./aca.bicep \
     --parameter prefix=$prefix region=$region infraRgName=$infrarg \
     --parameter containerImage=${prefix}acr.azurecr.io/${image} targetPort=$targetPort
 ```
