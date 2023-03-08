@@ -17,7 +17,7 @@ public class PrivacyModel : PageModel
 
     public void OnGet()
     {
-        this._config.AsEnumerable().OrderBy(kvp => kvp.Key).ToList().ForEach(kvp => this.configDict.Add(kvp));
+        this._config.AsEnumerable().OrderBy(kvp => kvp.Key).ToList().ForEach(kvp => this.configDict.Add(kvp.Key, kvp.Value ?? string.Empty ));
     }
 }
 

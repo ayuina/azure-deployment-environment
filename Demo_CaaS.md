@@ -68,4 +68,14 @@ az deployment group create -g $acirg -f ./aci.bicep \
     --parameter containerImage=${prefix}acr.azurecr.io/${image} targetPort=$targetPort
 ```
 
+## Deploy Web App for Container
 
+```
+TBD
+```
+
+## Deploy Azure Kubernetes
+
+```
+TBD
+```
