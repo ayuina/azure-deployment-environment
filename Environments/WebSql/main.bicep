@@ -1,13 +1,13 @@
-param prefix string = 'ayuina'
-param region string = 'westus3'
-param sqlusername string = prefix
-@secure()
-param sqlpassword string
+param prefix string
+param region string
 
 var appSvcName = '${prefix}-web'
 var appSvcPlanName = '${prefix}-asp'
 var sqlSvrName = '${prefix}-sqlsvr'
 var sqlDbName = '${prefix}-sqldb'
+var sqlUserName = prefix
+var sqlUserPassword = 'P@ss${uniqueString(resourceGroup().id)}'
+var sqlConstr = 'Server=tcp:${sqlsvr.properties.fullyQualifiedDomainName},1433; Database=${sqlDbName}; User ID=${sqlUserName}; Password=${sqlUserPassword};Trusted_Connection=False;Encrypt=True;'
 
 var logAnalyticsName = '${prefix}-laws'
 var appInsightsName = '${appSvcName}-ai'
@@ -93,8 +93,8 @@ resource sqlsvr 'Microsoft.Sql/servers@2021-11-01' = {
   name: sqlSvrName
   location: region
   properties: {
-    administratorLogin: sqlusername
-    administratorLoginPassword: sqlpassword
+    administratorLogin: sqlUserName
+    administratorLoginPassword: sqlUserPassword
   }
 }
 
@@ -113,7 +113,7 @@ resource sqlconstr 'Microsoft.Web/sites/config@2022-03-01' = {
   properties: {
     sqlconstr : {
       type: 'SQLAzure'
-      value: 'Server=tcp:${sqlsvr.properties.fullyQualifiedDomainName},1433; Database=${sqlDbName}; User ID=${sqlusername}; Password=${sqlpassword};Trusted_Connection=False;Encrypt=True;'
+      value: sqlConstr
     }
   }
 }
@@ -127,6 +127,5 @@ resource sqlfw 'Microsoft.Sql/servers/firewallRules@2021-11-01' = {
   }
 }
 
-
-output webapiEndpoint string = 'https://${web.properties.enabledHostNames[0]}/swagger'
+output webapiEndpoint string = 'https://${web.properties.enabledHostNames[0]}'
 output kuduEndpoint string = 'https://${web.properties.enabledHostNames[1]}'
