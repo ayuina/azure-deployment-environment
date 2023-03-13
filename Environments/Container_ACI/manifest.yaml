@@ -1,5 +1,5 @@
 name: Container_ACI
-version: 1.0.0
+version: 1.0.1
 summary: Azure Container Instance
 description: Deploys container instance, depending on infra
 runner: ARM
@@ -32,8 +32,7 @@ parameters:
 - id: "targetPort"
   name: "targetPort"
   description: "Port number exposed by tager container"
-  default: ""
-  type: "string"
+  type: "integer"
   required: true
 
 
