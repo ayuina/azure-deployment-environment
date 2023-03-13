@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.15.31.15270",
-      "templateHash": "8717592535874596073"
+      "templateHash": "11378713315951729429"
     }
   },
   "parameters": {
@@ -17,12 +17,26 @@
     }
   },
   "variables": {
+    "strAccName": "[replace(format('{0}-str', parameters('prefix')), '-', '')]",
     "logAnalyticsName": "[format('{0}-laws', parameters('prefix'))]",
-    "appInsightsName": "[format('{0}-ai', parameters('prefix'))]",
     "uamiName": "[format('{0}-uami', parameters('prefix'))]",
-    "acrName": "[replace(format('{0}-acr', parameters('prefix')), '-', '')]"
+    "acrName": "[replace(format('{0}-acr', parameters('prefix')), '-', '')]",
+    "diagRetention": {
+      "days": 0,
+      "enabled": false
+    }
   },
   "resources": [
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2022-05-01",
+      "name": "[variables('strAccName')]",
+      "location": "[parameters('region')]",
+      "kind": "StorageV2",
+      "sku": {
+        "name": "Standard_LRS"
+      }
+    },
     {
       "type": "Microsoft.OperationalInsights/workspaces",
       "apiVersion": "2022-10-01",
@@ -42,22 +56,6 @@
         "publicNetworkAccessForIngestion": "Enabled",
         "publicNetworkAccessForQuery": "Enabled"
       }
-    },
-    {
-      "type": "Microsoft.Insights/components",
-      "apiVersion": "2020-02-02",
-      "name": "[variables('appInsightsName')]",
-      "location": "[parameters('region')]",
-      "kind": "web",
-      "properties": {
-        "Application_Type": "web",
-        "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsName'))]",
-        "publicNetworkAccessForIngestion": "Enabled",
-        "publicNetworkAccessForQuery": "Enabled"
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsName'))]"
-      ]
     },
     {
       "type": "Microsoft.ContainerRegistry/registries",
@@ -92,6 +90,42 @@
       "dependsOn": [
         "[resourceId('Microsoft.ContainerRegistry/registries', variables('acrName'))]",
         "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', variables('uamiName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Insights/diagnosticSettings",
+      "apiVersion": "2021-05-01-preview",
+      "scope": "[format('Microsoft.ContainerRegistry/registries/{0}', variables('acrName'))]",
+      "name": "[format('{0}-diag', variables('acrName'))]",
+      "properties": {
+        "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', variables('strAccName'))]",
+        "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsName'))]",
+        "logs": [
+          {
+            "category": null,
+            "categoryGroup": "audit",
+            "enabled": true,
+            "retentionPolicy": "[variables('diagRetention')]"
+          },
+          {
+            "category": null,
+            "categoryGroup": "allLogs",
+            "enabled": true,
+            "retentionPolicy": "[variables('diagRetention')]"
+          }
+        ],
+        "metrics": [
+          {
+            "category": "AllMetrics",
+            "enabled": true,
+            "retentionPolicy": "[variables('diagRetention')]"
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.ContainerRegistry/registries', variables('acrName'))]",
+        "[resourceId('Microsoft.OperationalInsights/workspaces', variables('logAnalyticsName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('strAccName'))]"
       ]
     }
   ]

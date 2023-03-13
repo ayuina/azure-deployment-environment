@@ -1,7 +1,7 @@
 name: Container_infra
-version: 1.0.0
+version: 1.1.0
 summary: Azure Container services infra resources
-description: Deploys container registry, log analytics, application insights
+description: Deploys container registry, log analytics, idntity for pull image
 runner: ARM
 templatePath: infra.json
 parameters:
