@@ -1,0 +1,82 @@
+# This is a SecretProviderClass example using user-assigned identity to access your key vault
+apiVersion: secrets-store.csi.x-k8s.io/v1
+kind: SecretProviderClass
+metadata:
+  name: azure-kvname-user-msi
+spec:
+  provider: azure
+  parameters:
+    usePodIdentity: "false"
+    useVMManagedIdentity: "true"          # Set to true for using managed identity
+    userAssignedIdentityID: "e905d3a0-e4b4-4fbd-b03a-3ef27a315e91"   # Set the clientID of the user-assigned managed identity to use
+    tenantId: "8c4c167a-81e1-4dfc-b792-b6a770abca62"                 # The tenant ID of the key vault
+    keyvaultName: "demo0313t-aks-kv"        # Set to the name of your key vault
+    cloudName: "AzurePublicCloud"           # [OPTIONAL for Azure] if not provided, the Azure environment defaults to AzurePublicCloud
+    objects:  |
+      array:
+        - |
+          objectName: appInsightConnectionString
+          objectType: secret              # object types: secret, key, or cert
+          objectVersion: ""               # [OPTIONAL] object versions, default to latest if empty
+  secretObjects:
+    - secretName: webapp1-secrets
+      type: Opaque
+      data:
+        - key: aiconstr
+          objectName: appInsightConnectionString
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp1-deploy
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: webapp1
+  template:
+    metadata:
+      labels:
+        app: webapp1
+    spec:
+      containers:
+      - name: webapp1-container
+        image: demo0313tacr.azurecr.io/webapp1:0313a
+        ports:
+        - containerPort: 5000
+        env:
+        - name: ApplicationInsights__ConnectionString
+          valueFrom:
+            secretKeyRef:
+              name: webapp1-secrets
+              key: aiconstr
+        resources:
+          limits:
+            cpu: "0.5"
+          requests:
+            cpu: "0.5"
+        volumeMounts:
+        - name: secrets-store01-inline
+          mountPath: "/mnt/secrets-store"
+          readOnly: true
+      volumes:
+      - name: secrets-store01-inline
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: "azure-kvname-user-msi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapp1-loadbalancer
+spec:
+  type: LoadBalancer
+  selector:
+    app: webapp1
+  ports:
+    - name: "http-port"
+      protocol: "TCP"
+      port: 80
+      targetPort: 5000
