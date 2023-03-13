@@ -1,0 +1,41 @@
+name: Container_ACI
+version: 1.0.0
+summary: Azure Container Instance
+description: Deploys container instance, depending on infra
+runner: ARM
+templatePath: aci.json
+parameters:
+- id: "prefix"
+  name: "prefix"
+  description: "prefix name for unique id"
+  default: ""
+  type: "string"
+  required: true
+- id: "region"
+  name: "region"
+  description: "Azure region for deployed resources"
+  default: ""
+  type: "string"
+  required: true
+- id: "infraRgName"
+  name: "infraRgName"
+  description: "Resource group name containing infra resources"
+  default: ""
+  type: "string"
+  required: true
+- id: "containerImage"
+  name: "containerImage"
+  description: "Container image full path"
+  default: ""
+  type: "string"
+  required: true
+- id: "targetPort"
+  name: "targetPort"
+  description: "Port number exposed by tager container"
+  default: ""
+  type: "string"
+  required: true
+
+
+
+
