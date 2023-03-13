@@ -1,0 +1,40 @@
+name: Container_ACA
+version: 1.0.0
+summary: Azure Container Apps demo 
+description: Deploys Azure Container Apps and Environment, depending on infra
+runner: ARM
+templatePath: aca.json
+parameters:
+- id: "prefix"
+  name: "prefix"
+  description: "prefix name for unique id"
+  default: ""
+  type: "string"
+  required: true
+- id: "region"
+  name: "region"
+  description: "Azure region for deployed resources"
+  default: ""
+  type: "string"
+  required: true
+- id: "infraRgName"
+  name: "infraRgName"
+  description: "Resource group name containing infra resources"
+  default: ""
+  type: "string"
+  required: true
+- id: "containerImage"
+  name: "containerImage"
+  description: "Container image full path"
+  default: ""
+  type: "string"
+  required: true
+- id: "targetPort"
+  name: "targetPort"
+  description: "Port number exposed by tager container"
+  type: "integer"
+  required: true
+
+
+
+

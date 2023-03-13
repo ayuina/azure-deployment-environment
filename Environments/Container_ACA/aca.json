@@ -1,0 +1,133 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.15.31.15270",
+      "templateHash": "11671559107549443691"
+    }
+  },
+  "parameters": {
+    "prefix": {
+      "type": "string"
+    },
+    "region": {
+      "type": "string"
+    },
+    "infraRgName": {
+      "type": "string"
+    },
+    "containerImage": {
+      "type": "string"
+    },
+    "targetPort": {
+      "type": "int"
+    }
+  },
+  "variables": {
+    "strAccName": "[replace(format('{0}-str', parameters('prefix')), '-', '')]",
+    "logAnalyticsName": "[format('{0}-laws', parameters('prefix'))]",
+    "uamiName": "[format('{0}-uami', parameters('prefix'))]",
+    "acrName": "[replace(format('{0}-acr', parameters('prefix')), '-', '')]",
+    "acaenvName": "[format('{0}-env', parameters('prefix'))]",
+    "acaName": "[format('{0}-aca', parameters('prefix'))]",
+    "appInsightsName": "[format('{0}-ai', variables('acaName'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2020-02-02",
+      "name": "[variables('appInsightsName')]",
+      "location": "[parameters('region')]",
+      "kind": "web",
+      "properties": {
+        "Application_Type": "web",
+        "WorkspaceResourceId": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('infraRgName')), 'Microsoft.OperationalInsights/workspaces', variables('logAnalyticsName'))]",
+        "publicNetworkAccessForIngestion": "Enabled",
+        "publicNetworkAccessForQuery": "Enabled"
+      }
+    },
+    {
+      "type": "Microsoft.App/managedEnvironments",
+      "apiVersion": "2022-10-01",
+      "name": "[variables('acaenvName')]",
+      "location": "[parameters('region')]",
+      "sku": {
+        "name": "Consumption"
+      },
+      "properties": {
+        "daprAIConnectionString": "[reference(resourceId('Microsoft.Insights/components', variables('appInsightsName')), '2020-02-02').ConnectionString]",
+        "appLogsConfiguration": {
+          "destination": "log-analytics",
+          "logAnalyticsConfiguration": {
+            "customerId": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('infraRgName')), 'Microsoft.OperationalInsights/workspaces', variables('logAnalyticsName')), '2022-10-01').customerId]",
+            "sharedKey": "[listKeys(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('infraRgName')), 'Microsoft.OperationalInsights/workspaces', variables('logAnalyticsName')), '2022-10-01').primarySharedKey]"
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Insights/components', variables('appInsightsName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.App/containerApps",
+      "apiVersion": "2022-10-01",
+      "name": "[variables('acaName')]",
+      "location": "[parameters('region')]",
+      "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+          "[format('{0}', extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('infraRgName')), 'Microsoft.ManagedIdentity/userAssignedIdentities', variables('uamiName')))]": {}
+        }
+      },
+      "properties": {
+        "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', variables('acaenvName'))]",
+        "configuration": {
+          "activeRevisionsMode": "Single",
+          "registries": [
+            {
+              "server": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('infraRgName')), 'Microsoft.ContainerRegistry/registries', variables('acrName')), '2022-12-01').loginServer]",
+              "identity": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('infraRgName')), 'Microsoft.ManagedIdentity/userAssignedIdentities', variables('uamiName'))]"
+            }
+          ],
+          "ingress": {
+            "external": true,
+            "targetPort": "[parameters('targetPort')]",
+            "transport": "http"
+          }
+        },
+        "template": {
+          "containers": [
+            {
+              "name": "[format('{0}-container', variables('acaName'))]",
+              "image": "[parameters('containerImage')]",
+              "env": [
+                {
+                  "name": "ASPNETCORE_ENVIRONMENT",
+                  "value": "Development"
+                },
+                {
+                  "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                  "value": "[reference(resourceId('Microsoft.Insights/components', variables('appInsightsName')), '2020-02-02').ConnectionString]"
+                }
+              ],
+              "resources": {
+                "cpu": "[json('0.5')]",
+                "memory": "1.0Gi"
+              }
+            }
+          ],
+          "scale": {
+            "minReplicas": 0,
+            "maxReplicas": 3
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.App/managedEnvironments', variables('acaenvName'))]",
+        "[resourceId('Microsoft.Insights/components', variables('appInsightsName'))]"
+      ]
+    }
+  ]
+}
