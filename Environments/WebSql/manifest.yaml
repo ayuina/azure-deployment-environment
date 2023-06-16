@@ -8,12 +8,10 @@ parameters:
 - id: "prefix"
   name: "prefix"
   description: "prefix name for unique id"
-  default: "demo"
   type: "string"
   required: true
 - id: "region"
   name: "region"
   description: "Azure region for deployed resources"
-  default: "[resourceGroup().location]"
   type: "string"
   required: true
