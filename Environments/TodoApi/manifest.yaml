@@ -8,13 +8,11 @@ parameters:
 - id: "prefix"
   name: "prefix"
   description: "prefix name for unique id"
-  default: "yourPrefix"
   type: "string"
   required: true
 - id: "region"
   name: "region"
   description: "Azure region for deployed resources"
-  default: "azureRegion"
   type: "string"
   required: true
 

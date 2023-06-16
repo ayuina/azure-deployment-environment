@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.14.46.61228",
-      "templateHash": "10257960762137605678"
+      "version": "0.18.4.5664",
+      "templateHash": "14482201389219075462"
     }
   },
   "parameters": {
@@ -59,7 +59,7 @@
     },
     {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2020-10-01",
+      "apiVersion": "2022-09-01",
       "name": "apim",
       "properties": {
         "expressionEvaluationOptions": {
@@ -86,8 +86,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.14.46.61228",
-              "templateHash": "17450555885330593655"
+              "version": "0.18.4.5664",
+              "templateHash": "11143193959290448070"
             }
           },
           "parameters": {
@@ -192,7 +192,7 @@
     },
     {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2020-10-01",
+      "apiVersion": "2022-09-01",
       "name": "webdb",
       "properties": {
         "expressionEvaluationOptions": {
@@ -219,8 +219,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.14.46.61228",
-              "templateHash": "1410169667073829761"
+              "version": "0.18.4.5664",
+              "templateHash": "16291738597075950553"
             }
           },
           "parameters": {
