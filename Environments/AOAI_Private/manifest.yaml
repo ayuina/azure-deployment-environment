@@ -9,27 +9,22 @@ parameters:
   name: "prefix"
   description: "prefix name for unique id"
   type: "string"
-  default: ""
   required: true
 - id: "aoaiRegion"
   name: "aoaiRegion"
   description: "OpenAI region"
-  default: ""
   required: true
 - id: "infraRegoion"
   name: "infraRegoion"
   description: "Infrastructure Region"
-  default: ""
   required: true
 - id: "infraRg"
   name: "infraRg"
   description: "Infrastructure Resource Group name"
-  default: ""
   required: true
 - id: "infraVnet"
   name: "infraVnet"
   description: "Infrastructure VNET name"
-  default: ""
   required: true
 
 
