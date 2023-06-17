@@ -1,5 +1,5 @@
 name: AOAI_Privae
-version: 1.3.0
+version: 1.4.0
 summary: Deploy Azure OpenAI with private endpoints
 description: Deploys Azure OpenAI with private endpoints
 runner: ARM
@@ -11,8 +11,8 @@ parameters:
   default: ""
   type: "string"
   required: true
-- id: "aoairegion"
-  name: "aoairegion"
+- id: "aoaiRegion"
+  name: "aoaiRegion"
   description: "OpenAI region"
   default: "uksouth"
   type: "string"

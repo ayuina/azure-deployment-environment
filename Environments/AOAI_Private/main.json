@@ -12,7 +12,7 @@
     "prefix": {
       "type": "string"
     },
-    "aoairegion": {
+    "aoaiRegion": {
       "type": "string"
     },
     "infraRegion": {
@@ -26,7 +26,7 @@
     }
   },
   "variables": {
-    "aoaiName": "[format('{0}-{1}-aoai', parameters('prefix'), parameters('aoairegion'))]",
+    "aoaiName": "[format('{0}-{1}-aoai', parameters('prefix'), parameters('aoaiRegion'))]",
     "aoaiZoneName": "privatelink.openai.azure.com",
     "aoaiPeName": "[format('{0}-pe', variables('aoaiName'))]"
   },
@@ -53,7 +53,7 @@
       "type": "Microsoft.CognitiveServices/accounts",
       "apiVersion": "2023-06-01-preview",
       "name": "[variables('aoaiName')]",
-      "location": "[parameters('aoairegion')]",
+      "location": "[parameters('aoaiRegion')]",
       "sku": {
         "name": "S0"
       },

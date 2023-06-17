@@ -1,10 +1,10 @@
 param prefix string
-param aoairegion string
+param aoaiRegion string
 param infraRegion string
 param infraRg string
 param infraVnet string
 
-var aoaiName = '${prefix}-${aoairegion}-aoai'
+var aoaiName = '${prefix}-${aoaiRegion}-aoai'
 var aoaiZoneName = 'privatelink.openai.azure.com'
 var aoaiPeName = '${aoaiName}-pe'
 
@@ -28,7 +28,7 @@ resource aoaiPrivateZone 'Microsoft.Network/privateDnsZones@2020-06-01' existing
 
 resource aoai 'Microsoft.CognitiveServices/accounts@2023-06-01-preview' = {
   name: aoaiName
-  location: aoairegion
+  location: aoaiRegion
   sku: {
     name: 'S0'
   }
