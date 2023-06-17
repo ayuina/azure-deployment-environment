@@ -1,5 +1,5 @@
 name: AOAI_Privae
-version: 1.4.0
+version: 1.5.0
 summary: Deploy Azure OpenAI with private endpoints
 description: Deploys Azure OpenAI with private endpoints
 runner: ARM
