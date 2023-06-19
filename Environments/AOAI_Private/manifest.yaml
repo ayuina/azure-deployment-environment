@@ -1,5 +1,5 @@
 name: AOAI_Private
-version: 1.5.0
+version: 1.5.1
 summary: Deploy Azure OpenAI with private endpoints
 description: Deploys Azure OpenAI with private endpoints
 runner: ARM
@@ -8,32 +8,32 @@ parameters:
 - id: "prefix"
   name: "prefix"
   description: "prefix name for unique id"
-  default: ""
   type: "string"
+  default: ""
   required: true
 - id: "aoaiRegion"
   name: "aoaiRegion"
   description: "OpenAI region"
   type: "string"
-  default: "uksouth"
-  required: false
+  default: ""
+  required: true
 - id: "infraRegoion"
   name: "infraRegoion"
   description: "Infrastructure Region"
   type: "string"
-  default: "japaneast"
-  required: false
+  default: ""
+  required: true
 - id: "infraRg"
   name: "infraRg"
   description: "Infrastructure Resource Group name"
   type: "string"
-  default: "depenv-japaneast-rg"
-  required: false
+  default: ""
+  required: true
 - id: "infraVnet"
   name: "infraVnet"
   description: "Infrastructure VNET name"
   type: "string"
-  default: "depenv-japaneast-vnet"
-  required: false
+  default: ""
+  required: true
 
 
