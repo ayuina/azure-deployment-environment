@@ -5,21 +5,21 @@
     "_generator": {
       "name": "bicep",
       "version": "0.18.4.5664",
-      "templateHash": "12383226172007411940"
+      "templateHash": "663512918802178871"
     }
   },
   "parameters": {
     "prefix": {
       "type": "string",
-      "defaultValue": "ayuina0621d"
+      "defaultValue": "ayuina0621k"
     },
     "aoaiRegion": {
       "type": "string",
-      "defaultValue": "uksouth"
+      "defaultValue": "eastus"
     },
     "integSubnetName": {
       "type": "string",
-      "defaultValue": "subnet1"
+      "defaultValue": "subnet128"
     }
   },
   "variables": {
@@ -74,7 +74,7 @@
     },
     {
       "type": "Microsoft.CognitiveServices/accounts",
-      "apiVersion": "2023-06-01-preview",
+      "apiVersion": "2023-05-01",
       "name": "[variables('aoaiName')]",
       "location": "[parameters('aoaiRegion')]",
       "sku": {
@@ -85,6 +85,25 @@
         "customSubDomainName": "[variables('aoaiName')]",
         "publicNetworkAccess": "Disabled"
       }
+    },
+    {
+      "type": "Microsoft.CognitiveServices/accounts/deployments",
+      "apiVersion": "2023-05-01",
+      "name": "[format('{0}/{1}', variables('aoaiName'), 'gpt35t')]",
+      "sku": {
+        "name": "Standard",
+        "capacity": 1
+      },
+      "properties": {
+        "model": {
+          "format": "OpenAI",
+          "name": "gpt-35-turbo",
+          "version": "0301"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.CognitiveServices/accounts', variables('aoaiName'))]"
+      ]
     },
     {
       "type": "Microsoft.Network/privateEndpoints",

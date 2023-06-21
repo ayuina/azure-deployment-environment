@@ -1,6 +1,6 @@
-param prefix string = 'ayuina0621d'
-param aoaiRegion string = 'uksouth'
-param integSubnetName string = 'subnet1'
+param prefix string = 'ayuina0621k'
+param aoaiRegion string = 'eastus'
+param integSubnetName string = 'subnet128'
 
 var infraRegion = 'japaneast'
 var infraRg = 'depenv-japaneast-rg'
@@ -41,7 +41,7 @@ resource appsvcPrivateZone 'Microsoft.Network/privateDnsZones@2020-06-01' existi
 }
 
 
-resource aoai 'Microsoft.CognitiveServices/accounts@2023-06-01-preview' = {
+resource aoai 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
   name: aoaiName
   location: aoaiRegion
   sku: {
@@ -52,6 +52,23 @@ resource aoai 'Microsoft.CognitiveServices/accounts@2023-06-01-preview' = {
     customSubDomainName: aoaiName
     publicNetworkAccess: 'Disabled'
   }
+}
+
+resource chatgpt 'Microsoft.CognitiveServices/accounts/deployments@2023-05-01' = {
+  parent: aoai
+  name: 'gpt35t'
+  sku: {
+    name: 'Standard'
+    capacity: 1
+  }
+  properties: {
+    model: {
+      format: 'OpenAI'
+      name: 'gpt-35-turbo'
+      version: '0301'
+    }
+  }
+
 }
 
 resource aoaipe 'Microsoft.Network/privateEndpoints@2023-02-01' = {

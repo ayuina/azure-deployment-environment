@@ -1,5 +1,5 @@
 name: AOAIWebApp_Private
-version: 1.0.0
+version: 1.0.1
 summary: Deploy Azure OpenAI and WebApp with private network
 description: Deploys Azure OpenAI with private endpoints, App Service with private endpoints and VNET integration
 runner: ARM
@@ -13,7 +13,7 @@ parameters:
   required: true
 - id: "aoaiRegion"
   name: "aoaiRegion"
-  description: "OpenAI region"
+  description: "OpenAI region like uksouth, eastus, etc..."
   type: "string"
   default: ""
   required: true
