@@ -1,0 +1,27 @@
+name: AOAIWebApp_Private
+version: 1.0.0
+summary: Deploy Azure OpenAI and WebApp with private network
+description: Deploys Azure OpenAI with private endpoints, App Service with private endpoints and VNET integration
+runner: ARM
+templatePath: main.json
+parameters:
+- id: "prefix"
+  name: "prefix"
+  description: "prefix name for unique id"
+  type: "string"
+  default: ""
+  required: true
+- id: "aoaiRegion"
+  name: "aoaiRegion"
+  description: "OpenAI region"
+  type: "string"
+  default: ""
+  required: true
+- id: "integSubnetName"
+  name: "integSubnetName"
+  description: "Infrastructure Subnet name for App Service VNET Integration"
+  type: "string"
+  default: ""
+  required: true
+
+
