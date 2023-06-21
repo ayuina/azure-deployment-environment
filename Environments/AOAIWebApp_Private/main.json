@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.18.4.5664",
-      "templateHash": "4557267154254184509"
+      "templateHash": "18340351436878498506"
     }
   },
   "parameters": {
@@ -152,8 +152,7 @@
         "clientAffinityEnabled": false,
         "virtualNetworkSubnetId": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('infraRg')), 'Microsoft.Network/virtualNetworks/subnets', variables('infraVnet'), parameters('integSubnetName'))]",
         "siteConfig": {
-          "linuxFxVersion": "PYTHON|3.10",
-          "windowsFxVersion": null,
+          "pythonVersion": "3.10",
           "ftpsState": "Disabled",
           "use32BitWorkerProcess": false,
           "vnetRouteAllEnabled": true,

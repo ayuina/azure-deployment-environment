@@ -125,8 +125,7 @@ resource web 'Microsoft.Web/sites@2022-03-01' = {
     clientAffinityEnabled: false
     virtualNetworkSubnetId: vnet::integSubnet.id
     siteConfig: {
-      linuxFxVersion: 'PYTHON|3.10'
-      windowsFxVersion: null
+      pythonVersion:'3.10'
       ftpsState: 'Disabled'
       use32BitWorkerProcess: false
       vnetRouteAllEnabled: true
