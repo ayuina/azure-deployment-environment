@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.18.4.5664",
-      "templateHash": "663512918802178871"
+      "templateHash": "4557267154254184509"
     }
   },
   "parameters": {
@@ -135,6 +135,7 @@
       "apiVersion": "2022-03-01",
       "name": "[variables('appSvcPlanName')]",
       "location": "[variables('infraRegion')]",
+      "kind": "linux",
       "sku": {
         "name": "S1",
         "capacity": 1
@@ -145,12 +146,14 @@
       "apiVersion": "2022-03-01",
       "name": "[variables('appSvcName')]",
       "location": "[variables('infraRegion')]",
+      "kind": "app,linux",
       "properties": {
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('appSvcPlanName'))]",
         "clientAffinityEnabled": false,
         "virtualNetworkSubnetId": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('infraRg')), 'Microsoft.Network/virtualNetworks/subnets', variables('infraVnet'), parameters('integSubnetName'))]",
         "siteConfig": {
-          "netFrameworkVersion": "v7.0",
+          "linuxFxVersion": "PYTHON|3.10",
+          "windowsFxVersion": null,
           "ftpsState": "Disabled",
           "use32BitWorkerProcess": false,
           "vnetRouteAllEnabled": true,
@@ -159,17 +162,6 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Web/serverfarms', variables('appSvcPlanName'))]"
-      ]
-    },
-    {
-      "type": "Microsoft.Web/sites/config",
-      "apiVersion": "2022-03-01",
-      "name": "[format('{0}/{1}', variables('appSvcName'), 'metadata')]",
-      "properties": {
-        "CURRENT_STACK": "dotnet"
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Web/sites', variables('appSvcName'))]"
       ]
     },
     {

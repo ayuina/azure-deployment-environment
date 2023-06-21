@@ -109,6 +109,7 @@ resource aoaipe 'Microsoft.Network/privateEndpoints@2023-02-01' = {
 resource asp 'Microsoft.Web/serverfarms@2022-03-01' = {
   name: appSvcPlanName
   location: infraRegion
+  kind: 'linux'
   sku: {
     name: 'S1'
     capacity: 1
@@ -118,12 +119,14 @@ resource asp 'Microsoft.Web/serverfarms@2022-03-01' = {
 resource web 'Microsoft.Web/sites@2022-03-01' = {
   name: appSvcName
   location: infraRegion
+  kind: 'app,linux'
   properties:{
     serverFarmId: asp.id
     clientAffinityEnabled: false
     virtualNetworkSubnetId: vnet::integSubnet.id
     siteConfig: {
-      netFrameworkVersion: 'v7.0'
+      linuxFxVersion: 'PYTHON|3.10'
+      windowsFxVersion: null
       ftpsState: 'Disabled'
       use32BitWorkerProcess: false
       vnetRouteAllEnabled: true
@@ -132,13 +135,13 @@ resource web 'Microsoft.Web/sites@2022-03-01' = {
   }
 }
 
-resource metadata 'Microsoft.Web/sites/config@2022-03-01' = {
-  name: 'metadata'
-  parent: web
-  properties: {
-    CURRENT_STACK: 'dotnet'
-  }
-}
+// resource metadata 'Microsoft.Web/sites/config@2022-03-01' = {
+//   name: 'metadata'
+//   parent: web
+//   properties: {
+//     CURRENT_STACK: 'dotnet'
+//   }
+// }
 
 
 resource appsvcpe 'Microsoft.Network/privateEndpoints@2023-02-01' = {
