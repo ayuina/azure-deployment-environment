@@ -114,6 +114,9 @@ resource asp 'Microsoft.Web/serverfarms@2022-03-01' = {
     name: 'S1'
     capacity: 1
   }
+  properties: {
+    reserved: true
+  }
 }
 
 resource web 'Microsoft.Web/sites@2022-03-01' = {
